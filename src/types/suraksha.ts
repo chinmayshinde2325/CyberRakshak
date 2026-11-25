@@ -23,8 +23,6 @@ export interface FamilyProfile {
   seniorName: string;
   seniorPhone: string;
   seniorEmail?: string;
-  seniorPhoneVerified?: boolean;
-  phoneAuthToken?: string;
   caregiverName: string;
   caregiverPhone: string;
   caregiverEmail?: string;

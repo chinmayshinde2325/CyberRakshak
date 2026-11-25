@@ -18,7 +18,6 @@ import {
   validateFamilyProfileInput,
 } from './src/utils/scamEngine.ts';
 import { getLanguageMeta } from './src/utils/i18n.ts';
-import { dispatchSmsOtp, OtpStore } from './src/utils/otpService.ts';
 import { DEFAULT_SITE_UPDATES, normalizeSiteUpdatesConfig } from './src/utils/siteUpdates.ts';
 import type {
   AlertSourceType,
@@ -150,7 +149,6 @@ function buildSaathiSystemInstruction(
 
 // In-memory alert store capped at 50 items for Caregiver Dashboard synchronization
 const alertHistory: CaregiverAlert[] = [];
-const otpStore = new OtpStore();
 
 const DATA_DIR = path.resolve(__dirname, 'data');
 const SITE_UPDATES_FILE = path.join(DATA_DIR, 'site-updates.json');
@@ -753,76 +751,7 @@ async function startServer() {
     }
   });
 
-  // 7. Genuine Phone Number SMS OTP Verification (Server-Side Hashed + Real SMS Gateway)
-  app.post('/api/auth/otp/request', async (req: Request, res: Response) => {
-    try {
-      const rawPhone = typeof req.body?.phone === 'string' ? req.body.phone : '';
-      const issued = otpStore.issueOtp(rawPhone);
-      if (!issued.ok) {
-        if (issued.code === 'invalid_phone') {
-          res.status(400).json({ error: 'Enter a valid 10-digit Indian mobile number starting with 6–9.' });
-          return;
-        }
-        res.status(429).json({
-          error: `Please wait ${issued.retryAfterSeconds ?? 30}s before requesting another OTP.`,
-          retryAfterSeconds: issued.retryAfterSeconds,
-        });
-        return;
-      }
-
-      const dispatch = await dispatchSmsOtp(issued.e164, issued.local10, issued.code);
-      if (!dispatch.sent) {
-        otpStore.clearPhone(rawPhone);
-        res.status(dispatch.smsNotConfigured ? 503 : 502).json({
-          error: dispatch.error || 'SMS gateway could not send OTP.',
-          smsNotConfigured: Boolean(dispatch.smsNotConfigured),
-        });
-        return;
-      }
-
-      res.json({
-        sent: true,
-        phone: issued.local10,
-        provider: dispatch.provider,
-        expiresInSeconds: issued.expiresInSeconds,
-      });
-    } catch (err) {
-      res.status(500).json({ error: formatGeminiError(err, 'Failed to request SMS OTP.') });
-    }
-  });
-
-  app.post('/api/auth/otp/verify', (req: Request, res: Response) => {
-    try {
-      const rawPhone = typeof req.body?.phone === 'string' ? req.body.phone : '';
-      const code = typeof req.body?.code === 'string' ? req.body.code : '';
-      const verified = otpStore.verifyOtp(rawPhone, code);
-
-      if (!verified.ok) {
-        const message =
-          verified.code === 'expired'
-            ? 'OTP expired. Request a new code.'
-            : verified.code === 'too_many_attempts'
-              ? 'Too many incorrect attempts. Request a new OTP.'
-              : verified.code === 'not_found'
-                ? 'No active OTP found for this phone number. Click Send OTP first.'
-                : verified.code === 'invalid_phone'
-                  ? 'Enter a valid 10-digit Indian mobile number.'
-                  : `Incorrect OTP.${typeof verified.remainingAttempts === 'number' ? ` ${verified.remainingAttempts} attempts left.` : ''}`;
-        res.status(400).json({ error: message, code: verified.code });
-        return;
-      }
-
-      res.json({
-        verified: true,
-        phone: verified.local10,
-        token: verified.token,
-      });
-    } catch (err) {
-      res.status(500).json({ error: formatGeminiError(err, 'OTP verification failed.') });
-    }
-  });
-
-  // 8. Modular Website Updates & Add-On Features Persistence
+  // 7. Modular Website Updates & Add-On Features Persistence
   app.get('/api/site-updates', (_req: Request, res: Response) => {
     res.json({ config: cachedSiteUpdates });
   });

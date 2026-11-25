@@ -20,9 +20,8 @@
 - **Scam Gym & Mock Banking Safe-Browsing Sandbox**
   - Risk-free simulated bank KYC, **Digital Arrest**, **Jeevan Pramaan**, and lottery scam call practice with red-flag replays and golden rules.
   - Clicking suspicious sandbox links or APKs triggers safe blocking and caregiver alert previews.
-- **Caregiver Dashboard & Optional SMS OTP Verification**
-  - Consent-first caregiver pairing (`Senior Mode` / `Caregiver Mode`), privacy toggle (masked reasons vs. flagged snippet sharing), permission-scoped device scan simulation, and prefilled WhatsApp alerts.
-  - Optional mobile OTP verification via **Fast2SMS** or **Twilio** (`/api/auth/otp/send` & `/api/auth/otp/verify`), with non-blocking guest access to Ask Saathi, Scam Gym, and Link Check.
+- **Caregiver Dashboard & Family Setup**
+  - Consent-first caregiver pairing (`Senior Mode` / `Caregiver Mode`), privacy toggle (masked reasons vs. flagged snippet sharing), permission-scoped device scan simulation, and prefilled WhatsApp alerts with non-blocking guest access to Ask Saathi, Scam Gym, and Link Check.
 - **Senior Scam News & Site Update Studio**
   - Filterable Maharashtra, Vidarbha, Nagpur, and national senior scam advisories with dates and direct **Practice in Scam Gym** / **Ask Saathi** actions.
   - Live **Site Update Studio** to toggle add-on modules (Emergency SOS card, Daily Safety Tip, Trusted Contacts Dial Book, PIN/UPI Checklist), publish custom feature cards, or add trusted domains, news alerts, and helplines with JSON export/import.
@@ -45,7 +44,7 @@
 
 ```text
 ├── index.html                        # HTML entry point & SEO metadata
-├── server.ts                         # Express server, SSE streaming, Gemini Live WS (/api/live), OTP & alerts API
+├── server.ts                         # Express server, SSE streaming, Gemini Live WS (/api/live) & alerts API
 ├── public/
 │   └── landing-pages/
 │       ├── inner-green-3d.html       # Interactive 3D cyber-defense hero scene
@@ -63,7 +62,7 @@
     │   ├── NewsSection.tsx           # Filterable senior cyber fraud advisories
     │   ├── VoiceAssistant.tsx        # Ask Saathi Astra/Fable orb, Live Voice & streaming chat drawer
     │   ├── CaregiverDashboard.tsx    # Family shield alerts, privacy controls & practice progress
-    │   ├── OnboardingGate.tsx        # Optional caregiver setup & mobile SMS OTP modal
+    │   ├── OnboardingGate.tsx        # Optional senior & caregiver setup modal
     │   ├── SiteUpdateStudio.tsx      # Modular live feature & content builder
     │   ├── AddedFeaturesSection.tsx  # Rendered add-on safety modules & SOS tools
     │   ├── StatsAndFunnelSection.tsx # I4C fraud metrics, 4-stage scam funnel & comparison table
@@ -73,9 +72,8 @@
         ├── scamEngine.ts             # Deterministic threat scoring, phone validation & alert builder
         ├── speechPlayer.ts           # AudioContext-unlocked Gemini TTS + SpeechSynthesis fallback
         ├── liveVoiceClient.ts        # 16kHz mic capture & 24kHz gapless WebSocket audio player
-        ├── otpService.ts             # HMAC-backed OTP store + Fast2SMS / Twilio dispatcher
         ├── siteUpdates.ts            # Sanitization & normalization for Site Update Studio
-        └── *.test.ts                 # Unit tests for i18n, scam engine, OTP, speech & updates
+        └── *.test.ts                 # Unit tests for i18n, scam engine, speech & updates
 ```
 
 ---
@@ -86,7 +84,7 @@
 
 - **Node.js** `>= 20`
 - **npm**
-- A **Gemini API Key** (and optional **Fast2SMS** or **Twilio** credentials if enabling live SMS OTP delivery)
+- A **Gemini API Key**
 
 ### Installation
 
@@ -108,11 +106,6 @@ cp .env.example .env
 | --- | --- | --- |
 | `GEMINI_API_KEY` | Yes | Server-side key for Ask Saathi chat, streaming, Live Voice, transcription, TTS, and AI threat explanations |
 | `APP_URL` | Optional | Public URL of the deployed application |
-| `FAST2SMS_API_KEY` | Optional | Enables genuine Indian SMS OTP delivery via Fast2SMS |
-| `TWILIO_ACCOUNT_SID` | Optional | Twilio Account SID (alternative live SMS OTP provider) |
-| `TWILIO_AUTH_TOKEN` | Optional | Twilio Auth Token |
-| `TWILIO_PHONE_NUMBER` | Optional | Twilio sender phone number |
-| `SESSION_SECRET` | Optional | Custom HMAC secret used for single-use OTP verification tokens |
 
 ### Running Locally
 
@@ -148,8 +141,6 @@ npm test         # Run unit tests (src/utils/*.test.ts)
 | `/api/tts` | `POST` | Multilingual speech synthesis (`gemini-3.8-flash-lite-tts`) |
 | `/api/analyze-threat` | `POST` | Hybrid deterministic + AI safety analysis for links, SMS, and apps |
 | `/api/scam-gym/reply` | `POST` | Simulated scammer dialogue turn generation |
-| `/api/auth/otp/send` | `POST` | Send real SMS verification OTP |
-| `/api/auth/otp/verify` | `POST` | Verify OTP code and return single-use confirmation token |
 | `/api/alerts/caregiver` | `GET` / `POST` | Retrieve or record caregiver alerts & WhatsApp payloads |
 | `/api/site-updates` | `GET` / `POST` | Load or save modular Site Update Studio configuration |
 

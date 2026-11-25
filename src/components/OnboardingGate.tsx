@@ -1,8 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import {
-  CheckCircle2,
   HardDrive,
-  KeyRound,
   MessageSquareWarning,
   ShieldAlert,
   ShieldCheck,
@@ -10,7 +8,7 @@ import {
 } from 'lucide-react';
 import type { FamilyProfile } from '../types/suraksha';
 import type { TranslationStrings } from '../utils/i18n';
-import { normalizeIndianPhone, validateFamilyProfileInput } from '../utils/scamEngine';
+import { validateFamilyProfileInput } from '../utils/scamEngine';
 
 interface OnboardingGateProps {
   open: boolean;
@@ -47,20 +45,6 @@ export function OnboardingGate({
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Phone OTP Authentication State
-  const [otpCode, setOtpCode] = useState('');
-  const [otpSending, setOtpSending] = useState(false);
-  const [otpVerifying, setOtpVerifying] = useState(false);
-  const [otpSentTo, setOtpSentTo] = useState<string | null>(null);
-  const [otpCooldown, setOtpCooldown] = useState(0);
-  const [otpFeedback, setOtpFeedback] = useState<{ type: 'info' | 'error' | 'success'; text: string } | null>(null);
-  const [verifiedPhone, setVerifiedPhone] = useState<string | null>(
-    existingProfile?.seniorPhoneVerified ? existingProfile.seniorPhone : null,
-  );
-  const [phoneAuthToken, setPhoneAuthToken] = useState<string | undefined>(
-    existingProfile?.phoneAuthToken,
-  );
-
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (ev: KeyboardEvent) => {
@@ -70,90 +54,9 @@ export function OnboardingGate({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [open, onClose]);
 
-  useEffect(() => {
-    if (otpCooldown <= 0) return;
-    const timer = window.setInterval(() => {
-      setOtpCooldown((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, [otpCooldown]);
-
   if (!open) return null;
 
   const ob = t.onboarding;
-  const normalizedSenior = normalizeIndianPhone(seniorPhone);
-  const isCurrentPhoneVerified =
-    Boolean(verifiedPhone && normalizedSenior.valid && verifiedPhone === normalizedSenior.local10);
-
-  const handleRequestOtp = async () => {
-    if (!normalizedSenior.valid) {
-      setOtpFeedback({ type: 'error', text: ob.errInvalidPhone });
-      return;
-    }
-    setOtpSending(true);
-    setOtpFeedback(null);
-
-    try {
-      const resp = await fetch('/api/auth/otp/request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: seniorPhone }),
-      });
-      const data = await resp.json().catch(() => ({}));
-      if (!resp.ok) {
-        setOtpFeedback({
-          type: 'error',
-          text: data.smsNotConfigured
-            ? `${ob.otpSecretMissingNote}`
-            : data.error || 'Could not send OTP right now.',
-        });
-        if (typeof data.retryAfterSeconds === 'number') {
-          setOtpCooldown(data.retryAfterSeconds);
-        }
-        return;
-      }
-
-      setOtpSentTo(data.phone || normalizedSenior.local10);
-      setOtpCooldown(30);
-      setOtpFeedback({
-        type: 'info',
-        text: `6-digit SMS OTP sent to +91 ${data.phone || normalizedSenior.local10}.`,
-      });
-    } catch {
-      setOtpFeedback({ type: 'error', text: 'Network error requesting SMS OTP.' });
-    } finally {
-      setOtpSending(false);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    if (!otpCode.trim()) return;
-    setOtpVerifying(true);
-    setOtpFeedback(null);
-
-    try {
-      const resp = await fetch('/api/auth/otp/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: seniorPhone, code: otpCode.trim() }),
-      });
-      const data = await resp.json().catch(() => ({}));
-      if (!resp.ok) {
-        setOtpFeedback({ type: 'error', text: data.error || 'Invalid OTP code.' });
-        return;
-      }
-
-      setVerifiedPhone(data.phone || normalizedSenior.local10);
-      setPhoneAuthToken(typeof data.token === 'string' ? data.token : undefined);
-      setOtpCode('');
-      setOtpSentTo(null);
-      setOtpFeedback({ type: 'success', text: ob.otpVerifiedBadge });
-    } catch {
-      setOtpFeedback({ type: 'error', text: 'Network error verifying OTP.' });
-    } finally {
-      setOtpVerifying(false);
-    }
-  };
 
   const handleFillDemo = () => {
     setSeniorName('Madhavrao Deshmukh');
@@ -195,11 +98,7 @@ export function OnboardingGate({
     }
 
     setErrors({});
-    onComplete({
-      ...result.normalized,
-      seniorPhoneVerified: isCurrentPhoneVerified,
-      phoneAuthToken: isCurrentPhoneVerified ? phoneAuthToken : undefined,
-    });
+    onComplete(result.normalized);
   };
 
   return (
@@ -263,94 +162,18 @@ export function OnboardingGate({
                 <label className="block text-xs font-medium text-[#4f5448]" htmlFor="senior-phone">
                   {ob.phoneLabel} *
                 </label>
-                <div className="mt-1 flex items-center gap-2">
-                  <input
-                    id="senior-phone"
-                    data-testid="senior-phone-input"
-                    type="tel"
-                    value={seniorPhone}
-                    onChange={(e) => setSeniorPhone(e.target.value)}
-                    placeholder={ob.phonePlaceholder}
-                    className="min-w-0 flex-1 rounded-lg border border-[#23261f]/20 bg-[#f9faf7] px-3 py-2 text-sm text-[#23261f] focus:border-[#4a5d34] focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    data-testid="send-otp-btn"
-                    disabled={otpSending || otpCooldown > 0 || !normalizedSenior.valid}
-                    onClick={() => void handleRequestOtp()}
-                    className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-lg border border-[#0e7490]/30 bg-[#e0f2fe] px-3 py-2 text-xs font-semibold text-[#0c4a6e] hover:bg-[#bae6fd] disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <KeyRound className="h-3.5 w-3.5" aria-hidden="true" />
-                    <span>
-                      {otpSending
-                        ? ob.sendingOtpBtn
-                        : otpCooldown > 0
-                          ? `${ob.resendOtpIn} ${otpCooldown}s`
-                          : ob.sendOtpBtn}
-                    </span>
-                  </button>
-                </div>
+                <input
+                  id="senior-phone"
+                  data-testid="senior-phone-input"
+                  type="tel"
+                  value={seniorPhone}
+                  onChange={(e) => setSeniorPhone(e.target.value)}
+                  placeholder={ob.phonePlaceholder}
+                  className="mt-1 w-full rounded-lg border border-[#23261f]/20 bg-[#f9faf7] px-3 py-2 text-sm text-[#23261f] focus:border-[#4a5d34] focus:outline-none"
+                />
                 {errors.seniorPhone && (
                   <p className="mt-1 text-xs font-medium text-[#b93829]">{errors.seniorPhone}</p>
                 )}
-
-                {/* Inline SMS OTP Verification Panel */}
-                <div className="mt-2.5 rounded-lg border border-[#0e7490]/20 bg-[#f0f9ff] p-2.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-semibold text-[#0c4a6e]">
-                      {ob.otpSectionTitle}
-                    </span>
-                    {isCurrentPhoneVerified && (
-                      <span
-                        data-testid="otp-verified-badge"
-                        className="inline-flex items-center gap-1 rounded-md bg-[#3f7a4c]/15 px-2 py-0.5 text-[11px] font-semibold text-[#1f4d29]"
-                      >
-                        <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
-                        <span>{ob.otpVerifiedBadge}</span>
-                      </span>
-                    )}
-                  </div>
-                  <p className="mt-0.5 text-[11px] text-[#475569]">{ob.otpHint}</p>
-
-                  {otpSentTo && !isCurrentPhoneVerified && (
-                    <div className="mt-2 flex items-center gap-2">
-                      <input
-                        data-testid="otp-code-input"
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={6}
-                        value={otpCode}
-                        onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                        placeholder={ob.otpCodePlaceholder}
-                        className="w-36 rounded-lg border border-[#0e7490]/30 bg-white px-2.5 py-1.5 text-xs font-semibold tracking-widest text-[#0f172a] focus:border-[#0e7490] focus:outline-none"
-                      />
-                      <button
-                        type="button"
-                        data-testid="verify-otp-btn"
-                        disabled={otpVerifying || otpCode.length !== 6}
-                        onClick={() => void handleVerifyOtp()}
-                        className="cursor-pointer rounded-lg bg-[#0f4c5c] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#156074] disabled:opacity-50"
-                      >
-                        {otpVerifying ? ob.verifyingOtpBtn : ob.verifyOtpBtn}
-                      </button>
-                    </div>
-                  )}
-
-                  {otpFeedback && (
-                    <p
-                      data-testid="otp-feedback"
-                      className={`mt-1.5 text-[11px] font-medium ${
-                        otpFeedback.type === 'error'
-                          ? 'text-[#9d2417]'
-                          : otpFeedback.type === 'success'
-                            ? 'text-[#1f4d29]'
-                            : 'text-[#0c4a6e]'
-                      }`}
-                    >
-                      {otpFeedback.text}
-                    </p>
-                  )}
-                </div>
               </div>
 
               <div>

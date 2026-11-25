@@ -117,16 +117,6 @@ export interface TranslationStrings {
     errInvalidEmail: string;
     errPermission: string;
     lockedNotice: string;
-    otpSectionTitle: string;
-    otpHint: string;
-    sendOtpBtn: string;
-    sendingOtpBtn: string;
-    resendOtpIn: string;
-    otpCodePlaceholder: string;
-    verifyOtpBtn: string;
-    verifyingOtpBtn: string;
-    otpVerifiedBadge: string;
-    otpSecretMissingNote: string;
   };
   seniorHome: {
     greetingPrefix: string;
@@ -370,16 +360,6 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationStrings> = {
       errInvalidEmail: 'Please enter a valid email address or leave it blank.',
       errPermission: 'Please enable at least one safety permission to activate protection.',
       lockedNotice: 'Ask Saathi AI, Scam Gym, and Link Check are ready to use right away. Optional: Sign In to link caregiver WhatsApp alerts.',
-      otpSectionTitle: 'Optional Mobile OTP Verification',
-      otpHint: 'Verify the senior mobile number with a real 6-digit SMS code before saving.',
-      sendOtpBtn: 'Send OTP',
-      sendingOtpBtn: 'Sending OTP...',
-      resendOtpIn: 'Resend in',
-      otpCodePlaceholder: 'Enter 6-digit OTP',
-      verifyOtpBtn: 'Verify OTP',
-      verifyingOtpBtn: 'Verifying...',
-      otpVerifiedBadge: 'Phone Verified via SMS',
-      otpSecretMissingNote: 'Live SMS requires FAST2SMS_API_KEY or Twilio credentials in Settings -> Secrets. You can still save your profile anytime.',
     },
     seniorHome: {
       greetingPrefix: 'Namaste,',
@@ -630,16 +610,6 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationStrings> = {
       errInvalidEmail: 'सही ईमेल लिखें या खाली छोड़ दें।',
       errPermission: 'सुरक्षा शुरू करने के लिए कम से कम एक अनुमति चालू करें।',
       lockedNotice: 'साथी AI, स्कैम जिम और लिंक जांच अभी उपयोग के लिए तैयार हैं। वैकल्पिक: WhatsApp अलर्ट के लिए साइन इन करें।',
-      otpSectionTitle: 'वैकल्पिक मोबाइल OTP सत्यापन',
-      otpHint: 'सही नंबर पक्का करने के लिए वरिष्ठ नागरिक के मोबाइल पर 6 अंकों का असली SMS OTP भेजें।',
-      sendOtpBtn: 'OTP भेजें',
-      sendingOtpBtn: 'OTP भेजा जा रहा है...',
-      resendOtpIn: 'दोबारा भेजें',
-      otpCodePlaceholder: '6 अंकों का OTP लिखें',
-      verifyOtpBtn: 'OTP सत्यापित करें',
-      verifyingOtpBtn: 'जांच हो रही है...',
-      otpVerifiedBadge: 'मोबाइल SMS द्वारा सत्यापित',
-      otpSecretMissingNote: 'असली SMS OTP के लिए Settings -> Secrets में FAST2SMS_API_KEY या Twilio कुंजी जोड़ें। आप बिना OTP के भी प्रोफ़ाइल सेव कर सकते हैं।',
     },
     seniorHome: {
       greetingPrefix: 'नमस्ते,',
@@ -890,16 +860,6 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationStrings> = {
       errInvalidEmail: 'वैध ईमेल टाका किंवा रिकामा ठेवा.',
       errPermission: 'सुरक्षा सुरू करण्यासाठी किमान एक परवानगी चालू करा.',
       lockedNotice: 'साथी AI, स्कॅम जिम आणि लिंक तपासणी आता थेट वापरता येते. ऐच्छिक: WhatsApp अलर्टसाठी साइन इन करा.',
-      otpSectionTitle: 'ऐच्छिक मोबाईल OTP पडताळणी',
-      otpHint: 'मोबाईल नंबर खरा असल्याची खात्री करण्यासाठी ६ अंकी खरा SMS OTP पाठवा.',
-      sendOtpBtn: 'OTP पाठवा',
-      sendingOtpBtn: 'OTP पाठवत आहे...',
-      resendOtpIn: 'पुन्हा पाठवा',
-      otpCodePlaceholder: '६ अंकी OTP टाका',
-      verifyOtpBtn: 'OTP तपासा',
-      verifyingOtpBtn: 'तपासणी सुरू आहे...',
-      otpVerifiedBadge: 'मोबाईल SMS द्वारे प्रमाणित',
-      otpSecretMissingNote: 'थेट SMS OTP साठी Settings -> Secrets मध्ये FAST2SMS_API_KEY किंवा Twilio की जोडा. तुम्ही OTP शिवायही माहिती सेव्ह करू शकता.',
     },
     seniorHome: {
       greetingPrefix: 'नमस्कार,',
@@ -1150,16 +1110,6 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationStrings> = {
       errInvalidEmail: 'बरोबर ईमेल टाका नाहीतर रिकामा सोडा.',
       errPermission: 'सुरक्षा सुरू करायले किमान एक परवानगी चालू ठेवा.',
       lockedNotice: 'साथी AI, स्कॅम जिम आन लिंक तपासणी नोंदणीबिगरबी चालते. WhatsApp अलर्टसाठी हवं तर साइन इन करा जी.',
-      otpSectionTitle: 'ऐच्छिक मोबाईल OTP पडताळणी',
-      otpHint: 'मोबाईल नंबर खरा हाये हे पाहाले ६ आकडी खरा SMS OTP धाडा.',
-      sendOtpBtn: 'OTP धाडा',
-      sendingOtpBtn: 'OTP जात हाये...',
-      resendOtpIn: 'पुन्हा धाडा',
-      otpCodePlaceholder: '६ आकडी OTP टाका',
-      verifyOtpBtn: 'OTP तपासा',
-      verifyingOtpBtn: 'तपासणी चालू हाये...',
-      otpVerifiedBadge: 'मोबाईल SMS द्वारे तपासला',
-      otpSecretMissingNote: 'खरा SMS OTP साठी Settings -> Secrets मधी FAST2SMS_API_KEY किंवा Twilio की टाका. तुम्ही OTP शिवायबी माहिती सेव्ह करू शकता.',
     },
     seniorHome: {
       greetingPrefix: 'रामराम जी,',
@@ -1410,16 +1360,6 @@ export const TRANSLATIONS: Record<LanguageCode, TranslationStrings> = {
       errInvalidEmail: 'बरोबर ईमेल लिहा या रिकामा सोडा.',
       errPermission: 'सुरक्षा सुरू कयना ले किमान एक परवानगी चालू कयका.',
       lockedNotice: 'साथी AI, स्कॅम जिम अनी लिंक जांच नोंदणी शिवाय बी चलता. WhatsApp अलर्ट साठी साइन इन कयका.',
-      otpSectionTitle: 'ऐच्छिक मोबाईल OTP तपासणी',
-      otpHint: 'मोबाईल नंबर खरा मंता का तपासाले ६ अंकी खरा SMS OTP पठोका.',
-      sendOtpBtn: 'OTP पठोका',
-      sendingOtpBtn: 'OTP जात मंता...',
-      resendOtpIn: 'पुन्हा पठोका',
-      otpCodePlaceholder: '६ अंकी OTP लिहा',
-      verifyOtpBtn: 'OTP तपासा',
-      verifyingOtpBtn: 'तपासणी चालू मंता...',
-      otpVerifiedBadge: 'मोबाईल SMS ने तपासला मंता',
-      otpSecretMissingNote: 'खरा SMS OTP साठी Settings -> Secrets ते FAST2SMS_API_KEY या Twilio की जोडा. तुम्ही OTP शिवाय बी माहिती जतन करू शकता.',
     },
     seniorHome: {
       greetingPrefix: 'सेवा जोहार,',

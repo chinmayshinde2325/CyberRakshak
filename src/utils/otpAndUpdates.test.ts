@@ -1,55 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { OtpStore } from './otpService.ts';
 import { normalizeDomainEntry, normalizeSiteUpdatesConfig, sanitizeActionUrl } from './siteUpdates.ts';
 import { cleanTextForSpeech, splitSpeechChunks } from './speechPlayer.ts';
-
-test('OtpStore enforces generation, expiry, attempt caps, cooldown, and single-use HMAC verification', () => {
-  const store = new OtpStore('unit-test-secret-key-minimum-32-chars');
-  const t0 = 1_700_000_000_000;
-
-  const badPhone = store.issueOtp('12345', t0);
-  assert.equal(badPhone.ok, false);
-
-  const issued = store.issueOtp('9823011223', t0);
-  assert.equal(issued.ok, true);
-  if (!issued.ok) return;
-  assert.match(issued.code, /^\d{6}$/);
-
-  // Cooldown prevents immediate resend
-  const tooSoon = store.issueOtp('9823011223', t0 + 5_000);
-  assert.equal(tooSoon.ok, false);
-  if (!tooSoon.ok) assert.equal(tooSoon.code, 'cooldown');
-
-  // Wrong code rejected with remainingAttempts
-  const wrong = store.verifyOtp('9823011223', '000000', t0 + 6_000);
-  assert.equal(wrong.ok, false);
-  if (!wrong.ok && issued.code !== '000000') {
-    assert.equal(wrong.code, 'mismatch');
-    assert.equal(wrong.remainingAttempts, 4);
-  }
-
-  // Correct code succeeds & yields verifiable token
-  const okRes = store.verifyOtp('+91 98230-11223', issued.code, t0 + 10_000);
-  assert.equal(okRes.ok, true);
-  if (!okRes.ok) return;
-  const verifiedToken = store.verifyToken(okRes.token, t0 + 20_000);
-  assert.equal(verifiedToken.valid, true);
-  assert.equal(verifiedToken.phone, '919823011223');
-
-  // Replay attempt fails because OTP is consumed
-  const replay = store.verifyOtp('9823011223', issued.code, t0 + 11_000);
-  assert.equal(replay.ok, false);
-
-  // Expiry check
-  const second = store.issueOtp('9823099887', t0 + 40_000);
-  assert.equal(second.ok, true);
-  if (second.ok) {
-    const expired = store.verifyOtp('9823099887', second.code, t0 + 40_000 + 6 * 60_000);
-    assert.equal(expired.ok, false);
-    if (!expired.ok) assert.equal(expired.code, 'expired');
-  }
-});
 
 test('sanitizeActionUrl blocks XSS schemes and allows safe web/tel/anchor links', () => {
   assert.equal(sanitizeActionUrl('javascript:alert(1)'), undefined);
