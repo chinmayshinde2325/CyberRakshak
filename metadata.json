@@ -1,0 +1,6 @@
+{
+  "name": "SurakshaSathi",
+  "description": "Digital literacy, cyber fraud protection, multi-language AI voice assistant, and caregiver safety network for senior citizens.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
